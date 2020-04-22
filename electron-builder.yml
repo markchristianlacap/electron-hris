@@ -1,0 +1,15 @@
+appId: com.app.hris
+productName: Human Resource Information System
+copyright: Copyright © 2020
+directories:
+  output: dist
+  buildResources: resources
+files:
+  - from: .
+    filter:
+      - package.json
+      - app
+extraFiles:
+  - storage
+  - database.json
+publish: null

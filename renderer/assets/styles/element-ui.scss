@@ -1,0 +1,8 @@
+@import "./variables";
+
+$--color-primary: $primary;
+$--color-success: $secondary;
+$--color-warning: $warning;
+$--color-danger: $danger;
+$--font-path: "~element-ui/lib/theme-chalk/fonts";
+@import "~element-ui/packages/theme-chalk/src/index";

@@ -1,0 +1,52 @@
+@import "fonts/Poppins";
+/* Scrollbar custom css */
+* {
+  -webkit-overflow-scrolling: auto;
+}
+
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 10px;
+}
+:hover::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+/* Css for router transition */
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 0.5s;
+}
+.page-enter,
+.page-leave-active {
+  opacity: 0;
+}
+
+/* Default values */
+html,
+body {
+  color: #fefefe;
+  font-family: "Poppins", sans-serif;
+  height: 100%;
+}
+.container {
+  width: 95%;
+  margin: 1em auto;
+}
+
+.el-message,
+.el-alert, .el-notification {
+  z-index: 99999!important;
+}
+
+.action-header {
+  display: flex;
+  align-items: center;
+  align-content: center;
+  justify-content: space-between;
+  margin-bottom: 1em;
+}
