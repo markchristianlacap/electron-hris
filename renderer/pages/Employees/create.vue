@@ -22,6 +22,9 @@ export default {
       children: [],
       eligibilities: [],
       experiences: [],
+      trainings: [],
+      voluntaries: [],
+      others: [],
     }
     const name = app.db.get("employees").map("eligibilities.eligibility").sortedUniq().value()
     console.log(name)
@@ -96,9 +99,15 @@ export default {
         child: false,
         eligibility: false,
         experience: false,
+        training: false,
+        voluntary: false,
+        other: false,
       },
       image: "",
       eligibility: {},
+      training: {},
+      other: {},
+      voluntary: {},
       experience: {},
       child: {},
     }
@@ -478,17 +487,14 @@ export default {
             </el-form-item>
             <el-form-item label="Mother's name">
               <el-row :gutter="4">
-                <el-col :span="7">
+                <el-col :span="8">
                   <el-input v-model="form.mother.name.last" placeholder="Last name"></el-input>
                 </el-col>
-                <el-col :span="7">
+                <el-col :span="8">
                   <el-input v-model="form.mother.name.first" placeholder="First name"></el-input>
                 </el-col>
-                <el-col :span="6">
+                <el-col :span="7">
                   <el-input v-model="form.mother.name.middle" placeholder="First name"></el-input>
-                </el-col>
-                <el-col :span="3">
-                  <el-input v-model="form.mother.name.suffix" placeholder="Suffix"></el-input>
                 </el-col>
               </el-row>
             </el-form-item>
@@ -527,11 +533,19 @@ export default {
               </el-row>
             </el-form-item>
             <el-row>
-              <el-col :span="15">
+              <el-col :span="12">
                 <el-form-item label="Contact">
                   <el-input
                     v-model="form.spouse.telNo"
                     placeholder="Telephone number/ Mobile number"
+                  ></el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="Occupation">
+                  <el-input
+                    v-model="form.spouse.occupation"
+                    placeholder="Input occupation"
                   ></el-input>
                 </el-form-item>
               </el-col>
@@ -794,6 +808,255 @@ export default {
                       (dialogs.experience = false),
                       (experience = {})
                   "
+                  >Confirm</el-button
+                >
+              </span>
+            </el-dialog>
+          </el-tab-pane>
+          <el-tab-pane label="L&D and Voluntary Work">
+            <el-row type="flex" justify="space-between">
+              <el-col :span="8">
+                <h4>Learning and Development / Trainings</h4>
+              </el-col>
+              <el-col :span="2">
+                <el-button type="primary" size="small" @click="dialogs.training = true">
+                  Add
+                </el-button>
+              </el-col>
+            </el-row>
+            <el-table size="small" :data="form.trainings" style="width: 100%;">
+              <el-table-column prop="title" label="Title"> </el-table-column>
+              <el-table-column prop="from" label="From"> </el-table-column>
+              <el-table-column prop="to" label="To"> </el-table-column>
+              <el-table-column prop="hours" label="No. of Hours"> </el-table-column>
+              <el-table-column prop="type" label="Type"> </el-table-column>
+              <el-table-column prop="conducted" label="Conducted by"> </el-table-column>
+              <el-table-column label="Remove" width="120">
+                <template slot-scope="scope">
+                  <el-button
+                    @click.native.prevent="deleteRow(form.trainings, scope.$index)"
+                    type="danger"
+                    size="small"
+                  >
+                    <i class="el-icon-delete"></i>
+                  </el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <el-dialog title="Training Information" :visible.sync="dialogs.training">
+              <el-form :model="training" label-width="80px">
+                <el-form-item label="Title">
+                  <el-input
+                    v-model="training.title"
+                    placeholder="TITLE OF LEARNING AND DEVELOPMENT INTERVENTIONS/TRAINING PROGRAMS"
+                  >
+                  </el-input>
+                </el-form-item>
+                <el-row>
+                  <el-col :span="10">
+                    <el-form-item label="From">
+                      <el-date-picker
+                        v-model="training.from"
+                        type="date"
+                        format="MM/dd/yyyy"
+                        value-format="MM/dd/yyyy"
+                        placeholder="MM/dd/yyyy"
+                      />
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="10">
+                    <el-form-item label="To">
+                      <el-date-picker
+                        v-model="training.to"
+                        type="date"
+                        format="MM/dd/yyyy"
+                        value-format="MM/dd/yyyy"
+                        placeholder="MM/dd/yyyy"
+                      />
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="10">
+                    <el-form-item label="Hours">
+                      <el-input-number
+                        v-model="training.hours"
+                        placeholder="Number of hours"
+                      ></el-input-number>
+                    </el-form-item>
+                  </el-col>
+                  <el-col :span="10">
+                    <el-form-item label="Type">
+                      <el-select
+                        v-model="training.type"
+                        filterable
+                        allow-create
+                        default-first-option
+                      >
+                        <el-option
+                          v-for="item in ['Managerial', 'Supervisory', 'Technical']"
+                          :key="item"
+                          :label="item"
+                          :value="item"
+                        >
+                        </el-option>
+                      </el-select>
+                    </el-form-item>
+                  </el-col>
+                  <el-col>
+                    <el-form-item label-width="30px">
+                      <p>Conducted by</p>
+                      <el-input
+                        v-model="training.conducted"
+                        placeholder="CONDUCTED/ SPONSORED BY "
+                      ></el-input>
+                    </el-form-item>
+                  </el-col>
+                </el-row>
+              </el-form>
+              <span slot="footer" class="dialog-footer">
+                <el-button @click="dialogs.training = false">Cancel</el-button>
+                <el-button
+                  type="primary"
+                  @click="
+                    addRow(form.trainings, training), (dialogs.training = false), (training = {})
+                  "
+                  >Confirm</el-button
+                >
+              </span>
+            </el-dialog>
+            <br />
+            <el-row type="flex" justify="space-between">
+              <el-col :span="6">
+                <h4>Voluntary Work</h4>
+              </el-col>
+              <el-col :span="2">
+                <el-button type="primary" size="small" @click="dialogs.voluntary = true">
+                  Add
+                </el-button>
+              </el-col>
+            </el-row>
+            <el-table size="small" :data="form.voluntaries" style="width: 100%;">
+              <el-table-column prop="organization" label="Organization"> </el-table-column>
+              <el-table-column prop="from" label="From"> </el-table-column>
+              <el-table-column prop="to" label="To"> </el-table-column>
+              <el-table-column prop="hours" label="Hours"> </el-table-column>
+              <el-table-column prop="description" label="Description"> </el-table-column>
+              <el-table-column label="Remove" width="120">
+                <template slot-scope="scope">
+                  <el-button
+                    @click.native.prevent="deleteRow(form.voluntaries, scope.$index)"
+                    type="danger"
+                    size="small"
+                  >
+                    <i class="el-icon-delete"></i>
+                  </el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <el-dialog title="Voluntary Work Information" :visible.sync="dialogs.voluntary">
+              <el-form :model="voluntary" label-width="110px">
+                <el-form-item label="Organization">
+                  <el-input
+                    v-model="voluntary.organization"
+                    placeholder="NAME & ADDRESS OF ORGANIZATION           "
+                  >
+                  </el-input>
+                </el-form-item>
+                <el-form-item label="From">
+                  <el-date-picker
+                    v-model="voluntary.from"
+                    type="date"
+                    format="MM/dd/yyyy"
+                    value-format="MM/dd/yyyy"
+                    placeholder="MM/dd/yyyy"
+                  />
+                </el-form-item>
+                <el-form-item label="To">
+                  <el-date-picker
+                    v-model="voluntary.to"
+                    type="date"
+                    format="MM/dd/yyyy"
+                    value-format="MM/dd/yyyy"
+                    placeholder="MM/dd/yyyy"
+                  />
+                </el-form-item>
+                <el-form-item label="Hours">
+                  <el-input v-model="voluntary.hours" placeholder="Number of Hours"></el-input>
+                </el-form-item>
+                <el-form-item label-width="20px">
+                  <p>Position / Nature of work (Describe)</p>
+                  <el-input
+                    type="textarea"
+                    v-model="voluntary.description"
+                    placeholder="Decribe your voluntary work ..."
+                  ></el-input>
+                </el-form-item>
+              </el-form>
+              <span slot="footer" class="dialog-footer">
+                <el-button @click="dialogs.voluntary = false">Cancel</el-button>
+                <el-button
+                  type="primary"
+                  @click="
+                    addRow(form.voluntaries, voluntary),
+                      (dialogs.voluntary = false),
+                      (voluntary = {})
+                  "
+                  >Confirm</el-button
+                >
+              </span>
+            </el-dialog>
+          </el-tab-pane>
+          <el-tab-pane label="Other Information">
+            <el-row type="flex" justify="space-between">
+              <el-col :span="8">
+                <h4>Other Information</h4>
+              </el-col>
+              <el-col :span="2">
+                <el-button type="primary" size="small" @click="dialogs.other = true">
+                  Add
+                </el-button>
+              </el-col>
+            </el-row>
+            <el-table size="small" :data="form.others" style="width: 100%;">
+              <el-table-column prop="skills" label="Skills"> </el-table-column>
+              <el-table-column prop="recognition" label="Recognition"> </el-table-column>
+              <el-table-column prop="membership" label="Membership"> </el-table-column>
+              <el-table-column label="Remove" width="120">
+                <template slot-scope="scope">
+                  <el-button
+                    @click.native.prevent="deleteRow(form.others, scope.$index)"
+                    type="danger"
+                    size="small"
+                  >
+                    <i class="el-icon-delete"></i>
+                  </el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <el-dialog title="Other Information" :visible.sync="dialogs.other">
+              <el-form :model="other" label-width="120px">
+                <el-form-item label="Skills">
+                  <el-input v-model="other.skills" placeholder="SPECIAL SKILLS and HOBBIES">
+                  </el-input>
+                </el-form-item>
+                <el-form-item label="Recognition">
+                  <el-input
+                    v-model="other.recognition"
+                    placeholder="NON-ACADEMIC DISTINCTIONS / RECOGNITION"
+                  ></el-input>
+                </el-form-item>
+                <el-form-item label="Membership">
+                  <el-input
+                    v-model="other.membership"
+                    placeholder="MEMBERSHIP IN ASSOCIATION/ORGANIZATION"
+                  >
+                  </el-input>
+                </el-form-item>
+              </el-form>
+              <span slot="footer" class="dialog-footer">
+                <el-button @click="dialogs.other = false">Cancel</el-button>
+                <el-button
+                  type="primary"
+                  @click="addRow(form.others, other), (dialogs.other = false), (other = {})"
                   >Confirm</el-button
                 >
               </span>

@@ -22,10 +22,6 @@ export default {
   build: {
     extend: config => {
       config.target = "electron-renderer"
-      config.module.rules.push({
-        test: /\.(xls|xlsx)$/,
-        loaders: ["arraybuffer-loader"],
-      })
     },
   },
 }

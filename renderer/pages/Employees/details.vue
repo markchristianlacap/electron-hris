@@ -1,9 +1,11 @@
 <script>
-import pds from "~/assets/templates/pds-template.xlsx"
 import XlsxTemplate from "xlsx-template"
+import { Workbook } from "exceljs"
 import moment from "moment"
-import fs from "fs"
-const { dialog } = require("electron").remote
+import { readFileSync, writeFileSync, existsSync } from "fs"
+import { join, extname } from "path"
+const { showSaveDialogSync } = require("electron").remote.dialog
+const xlsx = readFileSync(join(process.cwd(), "templates", "pds-template.xlsx"))
 export default {
   asyncData({ app, query }) {
     const id = query.id
@@ -14,7 +16,8 @@ export default {
     fields: [
       {
         label: "Complete name",
-        serialize: ({ last, first, middle, suffix }) => `${last}, ${first} ${middle} ${suffix}`,
+        serialize: ({ last, first, middle, suffix }) =>
+          `${last}, ${first} ${middle} ${suffix || ""}`,
         col: "name",
       },
       {
@@ -99,6 +102,32 @@ export default {
         col: "employeeNo",
       },
     ],
+    family: [
+      {
+        label: "Father's Complete Name",
+        col: "father",
+        serialize: ({ name }) => {
+          const { last, first, middle, suffix } = name
+          return `${last}, ${first} ${middle} ${suffix || ""}`
+        },
+      },
+      {
+        label: "Mother's Complete Name",
+        col: "mother",
+        serialize: ({ name }) => {
+          const { last, first, middle } = name
+          return `${last}, ${first} ${middle}`
+        },
+      },
+      {
+        label: "Spouse's Complete Name",
+        col: "spouse",
+        serialize: ({ name }) => {
+          const { last, first, middle, suffix } = name
+          return `${last}, ${first} ${middle} ${suffix || ""}`
+        },
+      },
+    ],
     schoolFields: [
       { model: "name", placeholder: "Name of School", span: "250" },
       { model: "degree", placeholder: "BASIC EDUCATION/DEGREE/COURSE ", span: "235" },
@@ -122,14 +151,25 @@ export default {
     },
   },
   methods: {
-    exportToPDS() {
-      this.data.dateNow = moment(Date.now()).format("dddd, MMM Do, YYYY")
-      const template = new XlsxTemplate(pds)
-      const sheetNumber = 1
-      template.substitute(sheetNumber, this.data)
-      const data = template.generate({ type: "nodebuffer" })
+    async exportToPDS() {
+      this.data.dateNow = moment().format("dddd, MMM Do, YYYY")
+      const template = new XlsxTemplate(xlsx)
+      ;[1, 2, 3, 4].forEach(n => template.substitute(n, this.data))
+      let data = template.generate({ type: "nodebuffer" })
+      // Add image to worksheet
+      const imgPath = this.data.image ? join(process.cwd(), this.data.image) : 0
+      if (imgPath && existsSync(imgPath)) {
+        const workbook = new Workbook()
+        await workbook.xlsx.load(data.buffer)
+        const image = workbook.addImage({
+          buffer: readFileSync(imgPath),
+          extension: extname(imgPath).replace(".", ""),
+        })
+        workbook.getWorksheet(4).addImage(image, "J50:M55")
+        data = await workbook.xlsx.writeBuffer()
+      }
       const defaultPath = `Personal Data Sheet - ${this.data.name.last} ${this.data.name.first}`
-      const path = dialog.showSaveDialogSync({
+      const path = showSaveDialogSync({
         defaultPath,
         filters: [
           {
@@ -139,7 +179,7 @@ export default {
         ],
       })
       if (path) {
-        fs.writeFileSync(path, data)
+        writeFileSync(path, data)
         this.$alert(`Document is saved on ${path}`, "Succesffully saved", {
           confirmButtonText: "OK",
         })
@@ -153,7 +193,7 @@ export default {
     <el-row type="flex" justify="space-between">
       <el-col :span="21">
         <h2>
-          {{`${data.name.last}, ${data.name.first} ${data.name.middle} ${data.name.suffix}`,}}
+          {{`${data.name.last}, ${data.name.first} ${data.name.middle} ${data.name.suffix || ''}`,}}
         </h2>
       </el-col>
       <el-col :span="3">
@@ -175,6 +215,7 @@ export default {
         </div>
       </el-col>
     </el-row>
+
     <el-divider></el-divider>
     <h3>Educational Background</h3>
     <el-divider></el-divider>
@@ -194,6 +235,30 @@ export default {
           {{ scope.row[model] || "N/A" }}
         </template>
       </el-table-column>
+    </el-table>
+    <el-divider></el-divider>
+    <h3>Family Background</h3>
+    <el-divider></el-divider>
+    <el-row>
+      <el-col v-for="({ span, label, col, serialize }, i) in family" :key="i" :span="span || 12">
+        <div class="grid-content">
+          <strong v-text="label"></strong>:
+          <p
+            v-text="serialize ? (data[col] ? serialize(data[col]) : 'none') : data[col] || 'none'"
+          ></p>
+        </div>
+      </el-col>
+    </el-row>
+    <br />
+    <h4>Childrens</h4>
+    <br />
+    <el-table size="small" :data="data.children">
+      <el-table-column fixed label="Name" width="150">
+        <template slot-scope="scope">
+          <strong>{{ scope.row.name }}</strong>
+        </template>
+      </el-table-column>
+      <el-table-column prop="birthDate" label="Date of birth"> </el-table-column>
     </el-table>
   </el-card>
 </template>
