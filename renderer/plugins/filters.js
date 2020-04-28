@@ -2,7 +2,7 @@ import moment from "moment"
 import Vue from "vue"
 
 function date(date) {
-  return moment(date).format("dddd, MMM Do, YYYY")
+  return moment(date).format("MMM DD, YYYY")
 }
 const filters = { date }
 

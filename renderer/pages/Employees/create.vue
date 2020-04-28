@@ -1,6 +1,6 @@
 <script>
 import nationalities from "@/assets/json/nationalities.json"
-import uuid from "~/assets/js/uuid"
+import { generate } from "shortid"
 import { readFileSync, copyFileSync } from "fs"
 import { join, extname } from "path"
 const { showOpenDialogSync } = require("electron").remote.dialog
@@ -26,19 +26,14 @@ export default {
       voluntaries: [],
       others: [],
     }
-    const name = app.db.get("employees").map("eligibilities.eligibility").sortedUniq().value()
-    console.log(name)
+    const trainings = app.db
+      .get("trainings")
+      .filter(({ participants }) => participants.map(({ id }) => id).includes(id))
+      .value()
     if (!id) return { form }
     form = app.db.get("employees").find({ id }).value() || form
-    return { form, currentID: form.employeeNo, oldData: JSON.stringify(form) }
+    return { form, currentID: form.employeeNo, trainings }
   },
-  // beforeRouteLeave(to, from, next) {
-  //   console.log(this.oldData)
-  //   if (!this.oldData) return next()
-  //   if (this.oldData === JSON.stringify(this.form)) return next()
-  //   const answer = window.confirm("Do you really want to leave? you have unsaved changes!")
-  //   answer ? next() : next(false)
-  // },
   data() {
     const checkUniqueId = (rule, employeeNo, callback) => {
       if (employeeNo === this.currentID) return callback()
@@ -163,7 +158,7 @@ export default {
           let db = this.$db.get("employees")
           const update = data.updated_at ? 1 : 0
           data.updated_at = Date.now()
-          data.id = data.id || uuid()
+          data.id = data.id || generate()
           if (this.image) {
             data.image = join("storage", "images", data.id + extname(this.image))
             copyFileSync(this.image, join(process.cwd(), data.image))
@@ -175,7 +170,6 @@ export default {
           }
           db.write()
           this.$message({ type: "success", message: "Successfully save" })
-          delete this.oldData
           this.$router.push("/employees")
         })
       } catch (error) {
@@ -824,17 +818,25 @@ export default {
                 </el-button>
               </el-col>
             </el-row>
-            <el-table size="small" :data="form.trainings" style="width: 100%;">
+            <el-table size="small" :data="trainings" style="width: 100%;">
               <el-table-column prop="title" label="Title"> </el-table-column>
-              <el-table-column prop="from" label="From"> </el-table-column>
-              <el-table-column prop="to" label="To"> </el-table-column>
+              <el-table-column label="From">
+                <template slot-scope="props">
+                  {{ props.row.from | date }}
+                </template>
+              </el-table-column>
+              <el-table-column label="To">
+                <template slot-scope="props">
+                  {{ props.row.to | date }}
+                </template>
+              </el-table-column>
               <el-table-column prop="hours" label="No. of Hours"> </el-table-column>
               <el-table-column prop="type" label="Type"> </el-table-column>
               <el-table-column prop="conducted" label="Conducted by"> </el-table-column>
               <el-table-column label="Remove" width="120">
                 <template slot-scope="scope">
                   <el-button
-                    @click.native.prevent="deleteRow(form.trainings, scope.$index)"
+                    @click.native.prevent="deleteRow(trainings, scope.$index)"
                     type="danger"
                     size="small"
                   >
@@ -916,9 +918,7 @@ export default {
                 <el-button @click="dialogs.training = false">Cancel</el-button>
                 <el-button
                   type="primary"
-                  @click="
-                    addRow(form.trainings, training), (dialogs.training = false), (training = {})
-                  "
+                  @click="addRow(trainings, training), (dialogs.training = false), (training = {})"
                   >Confirm</el-button
                 >
               </span>
@@ -936,8 +936,16 @@ export default {
             </el-row>
             <el-table size="small" :data="form.voluntaries" style="width: 100%;">
               <el-table-column prop="organization" label="Organization"> </el-table-column>
-              <el-table-column prop="from" label="From"> </el-table-column>
-              <el-table-column prop="to" label="To"> </el-table-column>
+              <el-table-column label="From">
+                <template slot-scope="props">
+                  {{ props.row.from | date }}
+                </template>
+              </el-table-column>
+              <el-table-column label="To">
+                <template slot-scope="props">
+                  {{ props.row.to | date }}
+                </template>
+              </el-table-column>
               <el-table-column prop="hours" label="Hours"> </el-table-column>
               <el-table-column prop="description" label="Description"> </el-table-column>
               <el-table-column label="Remove" width="120">
