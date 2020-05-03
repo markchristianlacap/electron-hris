@@ -33,6 +33,10 @@ body {
   font-family: "Poppins", sans-serif;
   height: 100%;
 }
+h1,h2,h3,h4,h5,h6{
+  color: #555;
+}
+
 .container {
   width: 95%;
   margin: 1em auto;
@@ -49,4 +53,9 @@ body {
   align-content: center;
   justify-content: space-between;
   margin-bottom: 1em;
+}
+
+.text-primary{
+  color: $primary;
+  text-shadow: 1px 1px 1px #555;
 }

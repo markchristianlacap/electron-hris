@@ -4,6 +4,7 @@ import { join } from "path"
 export default {
   asyncData({ app }) {
     const data = app.db.get("employees").value()
+
     return { data }
   },
   data: function () {
@@ -108,7 +109,9 @@ export default {
 </script>
 <template>
   <div class="container">
-    <h2>Employees</h2>
+    <el-page-header @back="$router.push('/administrator')"> </el-page-header>
+
+    <h1 class="text-primary">Employees</h1>
     <el-divider> </el-divider>
     <div class="action-header">
       <div class="buttons">

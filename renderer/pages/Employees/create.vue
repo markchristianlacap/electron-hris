@@ -22,23 +22,18 @@ export default {
       children: [],
       eligibilities: [],
       experiences: [],
-      trainings: [],
       voluntaries: [],
       others: [],
     }
-    const trainings = app.db
-      .get("trainings")
-      .filter(({ participants }) => participants.map(({ id }) => id).includes(id))
-      .value()
+
     if (!id) return { form }
     form = app.db.get("employees").find({ id }).value() || form
-    return { form, currentID: form.employeeNo, trainings }
+    return { form, currentID: form.employeeNo }
   },
   data() {
     const checkUniqueId = (rule, employeeNo, callback) => {
       if (employeeNo === this.currentID) return callback()
       const user = this.$db.get("employees").find({ employeeNo }).value()
-      console.log(user)
       if (user) callback(new Error("ID number is already exist."))
       callback()
     }
@@ -99,6 +94,7 @@ export default {
         other: false,
       },
       image: "",
+      searchTraining: "",
       eligibility: {},
       training: {},
       other: {},
@@ -155,6 +151,7 @@ export default {
             })
             return
           }
+          data.id = data.id || generate()
           let db = this.$db.get("employees")
           const update = data.updated_at ? 1 : 0
           data.updated_at = Date.now()
@@ -818,7 +815,7 @@ export default {
                 </el-button>
               </el-col>
             </el-row>
-            <el-table size="small" :data="trainings" style="width: 100%;">
+            <el-table size="small" :data="form.trainings" style="width: 100%;">
               <el-table-column prop="title" label="Title"> </el-table-column>
               <el-table-column label="From">
                 <template slot-scope="props">
@@ -836,7 +833,7 @@ export default {
               <el-table-column label="Remove" width="120">
                 <template slot-scope="scope">
                   <el-button
-                    @click.native.prevent="deleteRow(trainings, scope.$index)"
+                    @click.native.prevent="deleteRow(form.trainings, scope.$index)"
                     type="danger"
                     size="small"
                   >
@@ -852,6 +849,9 @@ export default {
                     v-model="training.title"
                     placeholder="TITLE OF LEARNING AND DEVELOPMENT INTERVENTIONS/TRAINING PROGRAMS"
                   >
+                    <template slot-scope="{ item }">
+                      <div class="value">{{ item.title }}</div>
+                    </template>
                   </el-input>
                 </el-form-item>
                 <el-row>
@@ -918,7 +918,9 @@ export default {
                 <el-button @click="dialogs.training = false">Cancel</el-button>
                 <el-button
                   type="primary"
-                  @click="addRow(trainings, training), (dialogs.training = false), (training = {})"
+                  @click="
+                    addRow(form.trainings, training), (dialogs.training = false), (training = {})
+                  "
                   >Confirm</el-button
                 >
               </span>

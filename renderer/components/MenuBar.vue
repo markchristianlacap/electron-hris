@@ -10,6 +10,7 @@ export default {
       { label: "Employees", to: "/employees" },
       { label: "Applicants", to: "/applicants" },
       { label: "Trainings", to: "/trainings" },
+      { label: "Salaries", to: "/salaries" },
       { label: "Reports", to: "/reports" },
     ],
   }),

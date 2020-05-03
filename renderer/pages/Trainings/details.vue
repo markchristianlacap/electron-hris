@@ -1,6 +1,6 @@
 <script>
 import XlsxTemplate from "xlsx-template"
-import moment from "moment"
+import moment from "moment/moment"
 import { readFileSync, writeFileSync } from "fs"
 import { join } from "path"
 const { showSaveDialogSync } = require("electron").remote.dialog

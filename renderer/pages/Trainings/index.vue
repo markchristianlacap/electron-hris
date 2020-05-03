@@ -55,7 +55,7 @@ export default {
 </script>
 <template>
   <div class="container">
-    <h2>Trainings</h2>
+    <h1 class="text-primary">Trainings</h1>
     <el-divider> </el-divider>
     <div class="action-header">
       <div class="buttons">

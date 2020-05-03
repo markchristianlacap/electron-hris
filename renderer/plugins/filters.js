@@ -1,4 +1,4 @@
-import moment from "moment"
+import moment from "moment/moment"
 import Vue from "vue"
 
 function date(date) {

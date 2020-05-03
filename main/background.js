@@ -16,13 +16,7 @@ if (isProd) {
   const mainWindow = createWindow("main", {
     frame: false,
     backgroundColor: "#282C34",
-    width: 700,
-    darkTheme: true,
-    height: 1000,
-    webPreferences: {
-      nodeIntegration: true,
-      nodeIntegrationInWorker: true,
-    },
+    minWidth: 1200,
   })
   if (isProd) {
     await mainWindow.loadURL("app://./")

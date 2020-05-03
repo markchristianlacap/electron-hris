@@ -1,7 +1,7 @@
 <script>
 import XlsxTemplate from "xlsx-template"
 import { Workbook } from "exceljs"
-import moment from "moment"
+import moment from "moment/moment"
 import { readFileSync, writeFileSync, existsSync } from "fs"
 import { join, extname } from "path"
 const { showSaveDialogSync } = require("electron").remote.dialog
@@ -10,6 +10,11 @@ export default {
   asyncData({ app, query }) {
     const id = query.id
     const data = app.db.get("employees").find({ id }).value()
+    const trainings = app.db
+      .get("trainings")
+      .filter(row => row.participants.filter(participant => participant.id === id).length)
+      .value()
+    data.trainings.push(...trainings)
     return { data }
   },
   data: () => ({
@@ -108,7 +113,7 @@ export default {
         col: "father",
         serialize: ({ name }) => {
           const { last, first, middle, suffix } = name
-          return `${last}, ${first} ${middle} ${suffix || ""}`
+          return `${last || ""}, ${first || ""} ${middle || ""} ${suffix || ""}`
         },
       },
       {
@@ -116,7 +121,7 @@ export default {
         col: "mother",
         serialize: ({ name }) => {
           const { last, first, middle } = name
-          return `${last}, ${first} ${middle}`
+          return `${last || ""}, ${first || ""} ${middle || ""}`
         },
       },
       {
@@ -124,7 +129,7 @@ export default {
         col: "spouse",
         serialize: ({ name }) => {
           const { last, first, middle, suffix } = name
-          return `${last}, ${first} ${middle} ${suffix || ""}`
+          return `${last || ""}, ${first || ""} ${middle || ""} ${suffix || ""}`
         },
       },
     ],
@@ -154,7 +159,10 @@ export default {
     async exportToPDS() {
       this.data.dateNow = moment().format("dddd, MMM Do, YYYY")
       const template = new XlsxTemplate(xlsx)
-      ;[1, 2, 3, 4].forEach(n => template.substitute(n, this.data))
+      template.substitute(1, this.data)
+      template.substitute(2, this.data)
+      template.substitute(3, this.data)
+      template.substitute(4, this.data)
       let data = template.generate({ type: "nodebuffer" })
       // Add image to worksheet
       const imgPath = this.data.image ? join(process.cwd(), this.data.image) : 0
@@ -189,87 +197,87 @@ export default {
 }
 </script>
 <template>
-  <el-card class="container">
-    <el-row type="flex" justify="space-between">
+  <div class="container">
+    <el-row type="flex" justify="space-between" align="middle">
       <el-col :span="21">
-        <h2>
+        <h2 class="text-primary">
           {{`${data.name.last}, ${data.name.first} ${data.name.middle} ${data.name.suffix || ''}`,}}
         </h2>
       </el-col>
       <el-col :span="3">
         <el-button plain type="primary" @click="exportToPDS()"
-          ><i class="el-icon-document-copy"></i> Save as PDS
+          ><i class="el-icon-document-copy"></i> Generate PDS
         </el-button>
       </el-col>
     </el-row>
-    <el-divider></el-divider>
-    <h3>Personal Information</h3>
-    <el-divider></el-divider>
-    <el-row>
-      <el-col v-for="({ span, label, col, serialize }, i) in fields" :key="i" :span="span || 12">
-        <div class="grid-content">
-          <strong v-text="label"></strong>:
-          <p
-            v-text="serialize ? (data[col] ? serialize(data[col]) : 'none') : data[col] || 'none'"
-          ></p>
-        </div>
-      </el-col>
-    </el-row>
+    <br />
+    <el-card>
+      <h3>Personal Information</h3>
+      <el-divider></el-divider>
+      <el-row>
+        <el-col v-for="({ span, label, col, serialize }, i) in fields" :key="i" :span="span || 12">
+          <div class="grid-content">
+            <strong v-text="label"></strong>:
+            <p
+              v-text="serialize ? (data[col] ? serialize(data[col]) : 'none') : data[col] || 'none'"
+            ></p>
+          </div>
+        </el-col>
+      </el-row>
 
-    <el-divider></el-divider>
-    <h3>Educational Background</h3>
-    <el-divider></el-divider>
-    <el-table size="small" :data="education" style="width: 100%;">
-      <el-table-column fixed label="Level" width="150">
-        <template slot-scope="scope">
-          <strong>{{ scope.row.level }}</strong>
-        </template>
-      </el-table-column>
-      <el-table-column
-        v-for="({ model, placeholder, span }, i) in schoolFields"
-        :key="i"
-        :label="placeholder"
-        :width="span || 1"
-      >
-        <template slot-scope="scope">
-          {{ scope.row[model] || "N/A" }}
-        </template>
-      </el-table-column>
-    </el-table>
-    <el-divider></el-divider>
-    <h3>Family Background</h3>
-    <el-divider></el-divider>
-    <el-row>
-      <el-col v-for="({ span, label, col, serialize }, i) in family" :key="i" :span="span || 12">
-        <div class="grid-content">
-          <strong v-text="label"></strong>:
-          <p
-            v-text="serialize ? (data[col] ? serialize(data[col]) : 'none') : data[col] || 'none'"
-          ></p>
-        </div>
-      </el-col>
-    </el-row>
-    <br />
-    <h4>Childrens</h4>
-    <br />
-    <el-table size="small" :data="data.children">
-      <el-table-column fixed label="Name" width="150">
-        <template slot-scope="scope">
-          <strong>{{ scope.row.name }}</strong>
-        </template>
-      </el-table-column>
-      <el-table-column prop="birthDate" label="Date of birth"> </el-table-column>
-    </el-table>
-  </el-card>
+      <el-divider></el-divider>
+      <h3>Educational Background</h3>
+      <el-divider></el-divider>
+      <el-table size="small" :data="education" style="width: 100%;">
+        <el-table-column fixed label="Level" width="150">
+          <template slot-scope="scope">
+            <strong>{{ scope.row.level }}</strong>
+          </template>
+        </el-table-column>
+        <el-table-column
+          v-for="({ model, placeholder, span }, i) in schoolFields"
+          :key="i"
+          :label="placeholder"
+          :width="span || 1"
+        >
+          <template slot-scope="scope">
+            {{ scope.row[model] || "N/A" }}
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-divider></el-divider>
+      <h3>Family Background</h3>
+      <el-divider></el-divider>
+      <el-row>
+        <el-col v-for="({ span, label, col, serialize }, i) in family" :key="i" :span="span || 12">
+          <div class="grid-content">
+            <strong v-text="label"></strong>:
+            <p
+              v-text="serialize ? (data[col] ? serialize(data[col]) : 'none') : data[col] || 'none'"
+            ></p>
+          </div>
+        </el-col>
+      </el-row>
+      <br />
+      <h4>Childrens</h4>
+      <br />
+      <el-table size="small" :data="data.children">
+        <el-table-column fixed label="Name" width="150">
+          <template slot-scope="scope">
+            <strong>{{ scope.row.name }}</strong>
+          </template>
+        </el-table-column>
+        <el-table-column prop="birthDate" label="Date of birth"> </el-table-column>
+      </el-table>
+    </el-card>
+  </div>
 </template>
 <style lang="scss" scoped>
 .grid-content {
   margin: 0.5em 0;
 }
-h2,
-h3 {
-  color: $primary;
-  text-shadow: 1px 1px 1px #555;
+strong {
+  color: #555;
 }
 h3 {
   letter-spacing: 0.2em;
