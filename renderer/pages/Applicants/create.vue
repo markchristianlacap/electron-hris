@@ -7,7 +7,6 @@ const { showOpenDialogSync } = require("electron").remote.dialog
 const { parse, stringify } = JSON
 export default {
   asyncData({ app, query }) {
-    const salaries = app.db.get("salaries").value()
     const id = query.id
     let form = {
       name: {},
@@ -24,26 +23,26 @@ export default {
       children: [],
       eligibilities: [],
       experiences: [],
-      trainings: [],
       voluntaries: [],
+      trainings: [],
       others: [],
     }
 
-    if (!id) return { form, salaries }
-    form = app.db.get("employees").find({ id }).value() || form
-    return { form: parse(stringify(form)), currentID: form.employee_id, salaries }
+    if (!id) return { form }
+    form = app.db.get("applicants").find({ id }).value() || form
+    return { form: parse(stringify(form)), currentID: form.employeeNo }
   },
   data() {
-    const checkUniqueId = (rule, employee_id, callback) => {
-      if (employee_id === this.currentID) return callback()
-      const user = this.$db.get("employees").find({ employee_id }).value()
+    const checkUniqueId = (rule, employeeNo, callback) => {
+      if (employeeNo === this.currentID) return callback()
+      const user = this.$db.get("applicants").find({ employeeNo }).value()
       if (user) callback(new Error("ID number is already exist."))
       callback()
     }
     return {
       nationalities,
       rules: {
-        employee_id: [
+        employeeNo: [
           { required: true, message: "Employee number is required." },
           { validator: checkUniqueId, trigger: "blur" },
         ],
@@ -121,30 +120,8 @@ export default {
       const path = this.image || !this.form.image || join(process.cwd(), this.form.image)
       return "data:image/png;base64," + readFileSync(path).toString("base64")
     },
-    salary_grades() {
-      let salary_grades = this.salaries.map(({ salary_grade }) => salary_grade)
-      return [...new Set(salary_grades)]
-    },
-    step_increments() {
-      let step_increments = this.salaries
-        .filter(({ salary_grade }) => salary_grade == this.form.salary_grade)
-        .map(({ step_increment }) => step_increment)
-
-      return step_increments
-    },
   },
   methods: {
-    setSalary() {
-      try {
-        const { amount } = this.salaries.find(
-          ({ salary_grade, step_increment }) =>
-            salary_grade === this.form.salary_grade && step_increment === this.form.step_increment
-        )
-        this.form.salary = amount
-      } catch (er) {
-        this.form.salary = null
-      }
-    },
     deleteRow(array, index) {
       array.splice(index, 1)
     },
@@ -161,6 +138,12 @@ export default {
     },
     clearImage() {
       this.image = ""
+    },
+    transfer() {
+      const { id } = this.form
+      this.$db.get("applicants").remove({ id }).write()
+      this.$db.get("/employees").push(this.form).write()
+      this.$router.push("employees")
     },
     onSubmit(data) {
       try {
@@ -184,7 +167,7 @@ export default {
             return
           }
           data.id = data.id || generate()
-          let db = this.$db.get("employees")
+          let db = this.$db.get("applicants")
           const update = data.updated_at ? 1 : 0
           data.updated_at = Date.now()
           data.id = data.id || generate()
@@ -199,7 +182,7 @@ export default {
           }
           db.write()
           this.$message({ type: "success", message: "Successfully save" })
-          this.$router.push("/employees")
+          this.$router.push("/applicants")
         })
       } catch (error) {
         this.$message({ type: "danger", message: error })
@@ -229,8 +212,10 @@ export default {
         >
           Save
         </el-button>
-
-        <el-button size="small" @click="$router.push('/employees')">Cancel</el-button>
+        <el-button size="small" icon="el-icon-document-add" plain @click="transfer" type="warning">
+          Transfer to Employees
+        </el-button>
+        <el-button size="small" @click="$router.push('/applicants')">Cancel</el-button>
         <el-tabs>
           <el-tab-pane label="Personal Information">
             <h3>Personal Information</h3>
@@ -271,6 +256,11 @@ export default {
               </el-col>
             </el-row>
             <el-row>
+              <el-col :span="8">
+                <el-form-item label="Employee No." prop="employeeNo">
+                  <el-input type="text" v-model="form.employeeNo" placeholder="XXX-XXX-XX " />
+                </el-form-item>
+              </el-col>
               <el-col :span="8">
                 <el-form-item label="Sex" prop="sex">
                   <el-radio label="Male" v-model="form.sex"></el-radio>
@@ -445,132 +435,6 @@ export default {
                       </el-form-item>
                     </el-col>
                   </el-row>
-                </el-form-item>
-              </el-col>
-            </el-row>
-          </el-tab-pane>
-          <el-tab-pane label="Employee Details">
-            <h3>Employee Details</h3>
-            <el-divider></el-divider>
-            <el-row>
-              <el-col :span="12">
-                <el-form-item label="Employee ID">
-                  <el-input v-model="form.employee_id" placeholder="Employee Id"></el-input>
-                </el-form-item>
-              </el-col>
-              <el-col :span="12">
-                <el-form-item label="Date hired">
-                  <el-date-picker
-                    v-model="form.date_hired"
-                    placeholder="Pick a date"
-                  ></el-date-picker>
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="Position">
-                  <el-select v-model="form.position" filterable allow-create default-first-option>
-                    <el-option
-                      v-for="item in [
-                        'Teacher 1',
-                        'Teacher 2',
-                        'Teacher 3',
-                        'Master Teacher 1',
-                        'Master Teacher 2',
-                        'Master Teacher 3',
-                        'Master Teacher 4',
-                        'Head Teacher 1',
-                        'Head Teacher 2',
-                        'Head Teacher 3',
-                        'Head Teacher 4',
-                        'Head Teacher 5',
-                        'Head Teacher 6',
-                        'Principal 1',
-                        'Principal 2',
-                        'Principal 3',
-                        'Principal 4',
-                      ]"
-                      :key="item"
-                      :label="item"
-                      :value="item"
-                    >
-                    </el-option>
-                  </el-select>
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="Status">
-                  <el-select v-model="form.status" filterable allow-create default-first-option>
-                    <el-option
-                      v-for="item in ['Regular', 'Permanent']"
-                      :key="item"
-                      :label="item"
-                      :value="item"
-                    >
-                    </el-option>
-                  </el-select>
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="Department">
-                  <el-select v-model="form.department" filterable allow-create default-first-option>
-                    <el-option
-                      v-for="item in [
-                        'Math',
-                        'English',
-                        'Science',
-                        'Filipino',
-                        'TLE',
-                        'AP',
-                        'MAPEH',
-                        'ESP',
-                      ]"
-                      :key="item"
-                      :label="item"
-                      :value="item"
-                    >
-                    </el-option>
-                  </el-select>
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="Salary Grade">
-                  <el-select
-                    v-model="form.salary_grade"
-                    filterable
-                    default-first-option
-                    @change="setSalary"
-                  >
-                    <el-option
-                      v-for="item in salary_grades"
-                      :key="item"
-                      :label="item"
-                      :value="item"
-                    >
-                    </el-option>
-                  </el-select>
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="Step Increment">
-                  <el-select
-                    @change="setSalary"
-                    v-model="form.step_increment"
-                    filterable
-                    default-first-option
-                  >
-                    <el-option
-                      v-for="item in step_increments"
-                      :key="item"
-                      :label="item"
-                      :value="item"
-                    >
-                    </el-option>
-                  </el-select>
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="Salary">
-                  <el-input v-model="form.salary" placeholder="Salary"></el-input>
                 </el-form-item>
               </el-col>
             </el-row>
@@ -1144,10 +1008,7 @@ export default {
                   />
                 </el-form-item>
                 <el-form-item label="Hours">
-                  <el-input-number
-                    v-model="voluntary.hours"
-                    placeholder="Number of Hours"
-                  ></el-input-number>
+                  <el-input v-model="voluntary.hours" placeholder="Number of Hours"></el-input>
                 </el-form-item>
                 <el-form-item label-width="20px">
                   <p>Position / Nature of work (Describe)</p>

@@ -9,12 +9,7 @@ const xlsx = readFileSync(join(process.cwd(), "templates", "pds-template.xlsx"))
 export default {
   asyncData({ app, query }) {
     const id = query.id
-    const data = app.db.get("employees").find({ id }).value()
-    const trainings = app.db
-      .get("trainings")
-      .filter(row => row.participants.filter(participant => participant.id === id).length)
-      .value()
-    if (data.trainings.length && trainings.length) data.trainings.push(...trainings)
+    const data = app.db.get("applicants").find({ id }).value()
     return { data }
   },
   data: () => ({
@@ -102,40 +97,9 @@ export default {
         label: "Tin No.",
         col: "tin",
       },
-    ],
-
-    employee_details: [
       {
-        label: "Employe ID",
-        col: "employee_id",
-      },
-      {
-        label: "Date Hired",
-        col: "date_hired",
-      },
-      {
-        label: "Position",
-        col: "position",
-      },
-      {
-        label: "Status",
-        col: "status",
-      },
-      {
-        label: "Department",
-        col: "department",
-      },
-      {
-        label: "Salary Grade",
-        col: "salary_grade",
-      },
-      {
-        label: "Step Increment",
-        col: "step_increment",
-      },
-      {
-        label: "Salary",
-        col: "salary",
+        label: "Employee No.",
+        col: "employeeNo",
       },
     ],
     family: [
@@ -276,23 +240,6 @@ export default {
           </template>
         </el-table-column>
       </el-table>
-      <el-divider></el-divider>
-      <h3>Employee Details</h3>
-      <el-divider></el-divider>
-      <el-row>
-        <el-col
-          v-for="({ span, label, col, serialize }, i) in employee_details"
-          :key="i"
-          :span="span || 12"
-        >
-          <div class="grid-content">
-            <strong v-text="label"></strong>:
-            <p
-              v-text="serialize ? (data[col] ? serialize(data[col]) : 'none') : data[col] || 'none'"
-            ></p>
-          </div>
-        </el-col>
-      </el-row>
       <el-divider></el-divider>
       <h3>Family Background</h3>
       <el-divider></el-divider>

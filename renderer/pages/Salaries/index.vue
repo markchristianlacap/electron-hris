@@ -3,7 +3,8 @@ import { generate } from "shortid"
 export default {
   asyncData({ app }) {
     const salaries = app.db.get("salaries").value()
-    return { salaries }
+
+    return { salaries: JSON.parse(JSON.stringify(salaries)) }
   },
   data: () => ({
     form: {},
@@ -19,21 +20,20 @@ export default {
         if (!valid) return
         array.push(data)
         data.id = generate()
-        this.$db.get("salaries").get("salaries").push(data).write()
+        this.$db.get("salaries").push(data).write()
         this.form = {}
       })
     },
     remove(array, { $index, row }) {
       array.splice($index, 1)
-      this.$db.remove(row).write()
+      this.$db.get("salaries").remove(row).write()
     },
   },
 }
 </script>
 <template>
   <div class="container">
-    <el-page-header @back="$router.push('/administrator')"> </el-page-header>
-    <h1 class="text-primary">Salary Table</h1>
+    <p class="text-light header">Salary Table</p>
     <el-divider> </el-divider>
     <el-row type="flex" justify="center" style="margin: 1em 0;">
       <el-col :span="12">

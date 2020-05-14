@@ -18,6 +18,7 @@ export default {
     "@/plugins/db.js",
     "@/plugins/element.js",
     "@/plugins/filters.js",
+    "@/plugins/apexcharts.js",
   ],
   build: {
     extend: config => {

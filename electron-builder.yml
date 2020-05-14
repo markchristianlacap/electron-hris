@@ -11,6 +11,4 @@ files:
       - app
 extraFiles:
   - templates
-  - storage
-  - database.json
 publish: null

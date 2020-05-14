@@ -27,9 +27,8 @@
 }
 
 /* Default values */
-html,
+
 body {
-  color: #fefefe;
   font-family: "Poppins", sans-serif;
   height: 100%;
 }
@@ -57,5 +56,44 @@ h1,h2,h3,h4,h5,h6{
 
 .text-primary{
   color: $primary;
-  text-shadow: 1px 1px 1px #555;
+}
+
+.text-secondary{
+  color: $secondary;
+}
+
+.text-info{
+  color: $info;
+}
+
+.text-warning{
+  color: $warning;
+}
+.text-danger{
+  color: $danger;
+}
+
+.text-light{
+  color: #fefefe;
+}
+.background-primary{
+  background: $primary;
+}
+
+.background-secondary{
+  background: $secondary;
+}
+
+.background-info{
+  background: $info;
+}
+
+.background-warning{
+  background: $warning;
+}
+.background-danger{
+  background: $danger;
+}
+.header{
+  font-size: 2em;
 }

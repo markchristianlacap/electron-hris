@@ -1,5 +1,8 @@
 <script>
 const { reload, close, toggleDevTools } = require("electron").remote.getCurrentWindow()
+import { copyFileSync } from "fs"
+import { join } from "path"
+const { showSaveDialogSync } = require("electron").remote.dialog
 export default {
   data: () => ({
     links: [
@@ -11,7 +14,8 @@ export default {
       { label: "Applicants", to: "/applicants" },
       { label: "Trainings", to: "/trainings" },
       { label: "Salaries", to: "/salaries" },
-      { label: "Reports", to: "/reports" },
+      // { label: "Reports", to: "/reports" },
+      { label: "Account Settings", to: "/settings" },
     ],
   }),
   created() {},
@@ -19,6 +23,25 @@ export default {
     close: () => close(),
     reload: () => reload(),
     devTool: () => toggleDevTools(),
+    exportDB() {
+      const dbPath = join(process.cwd(), "database.json")
+      const defaultPath = `database`
+      const path = showSaveDialogSync({
+        defaultPath,
+        filters: [
+          {
+            name: "JSON Format",
+            extensions: ["json"],
+          },
+        ],
+      })
+      if (path) {
+        copyFileSync(dbPath, path)
+        this.$alert(`Database exported in ${path}`, "Succesffully exported", {
+          confirmButtonText: "OK",
+        })
+      }
+    },
     async logout() {
       try {
         await this.$confirm("Are you sure you want to logout?", "Warning", {
@@ -51,6 +74,7 @@ export default {
         <ul class="dropdown-item">
           <nuxt-link to="/about" tag="li">About</nuxt-link>
           <li @click="reload">Reload</li>
+          <li @click="exportDB">Export Database</li>
           <li @click="devTool">Open Dev Tools</li>
           <li @click="close">Exit</li>
         </ul>

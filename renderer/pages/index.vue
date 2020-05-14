@@ -11,6 +11,8 @@ export default {
     loading: false,
   }),
   asyncData({ app }) {
+    const user = app.db.get("users").value()
+    if (user && user.length) return
     const salt = genSaltSync(10)
     const username = "admin"
     const password = hashSync("admin", salt)

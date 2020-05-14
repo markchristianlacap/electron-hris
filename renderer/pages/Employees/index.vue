@@ -3,7 +3,7 @@ import { unlinkSync } from "fs"
 import { join } from "path"
 export default {
   asyncData({ app }) {
-    const data = app.db.get("employees").value()
+    const data = app.db.get("employees").value() || []
 
     return { data }
   },
@@ -58,6 +58,159 @@ export default {
           prop: "weight",
           width: 90,
         },
+        {
+          label: "Citizenship",
+          prop: "citizenship",
+          width: 120,
+        },
+        {
+          label: "Blood Type",
+          prop: "bloodType",
+          width: 120,
+        },
+        {
+          groupLlb: "ELEMENTARY",
+          items: [
+            {
+              label: "Name",
+              prop: "elementary.name",
+              width: 200,
+            },
+            {
+              label: "From",
+              prop: "elementary.from",
+            },
+            {
+              label: "To",
+              prop: "elementary.to",
+            },
+            {
+              label: "Graduated",
+              prop: "elementary.graduated",
+              width: 120,
+            },
+          ],
+        },
+
+        {
+          groupLlb: "SECONDARY",
+          items: [
+            {
+              label: "Name",
+              prop: "secondary.name",
+              width: 200,
+            },
+            {
+              label: "From",
+              prop: "secondary.from",
+            },
+            {
+              label: "To",
+              prop: "secondary.to",
+            },
+            {
+              label: "Graduated",
+              prop: "secondary.graduated",
+              width: 120,
+            },
+          ],
+        },
+        {
+          groupLlb: "VOCATIONAL",
+          items: [
+            {
+              label: "Name",
+              prop: "vocational.name",
+              width: 200,
+            },
+            {
+              label: "Degree",
+              prop: "vocational.degree",
+              width: 200,
+            },
+            {
+              label: "From",
+              prop: "vocational.from",
+            },
+            {
+              label: "To",
+              prop: "vocational.to",
+            },
+            {
+              label: "Graduated",
+              prop: "vocational.graduated",
+              width: 120,
+            },
+            {
+              label: "Earned",
+              prop: "vocational.earned",
+            },
+          ],
+        },
+        {
+          groupLlb: "COLLEGE",
+          items: [
+            {
+              label: "Name",
+              prop: "college.name",
+              width: 250,
+            },
+            {
+              label: "Degree",
+              prop: "college.degree",
+              width: 200,
+            },
+            {
+              label: "From",
+              prop: "college.from",
+            },
+            {
+              label: "To",
+              prop: "college.to",
+            },
+            {
+              label: "Graduated",
+              prop: "college.graduated",
+              width: 120,
+            },
+            {
+              label: "Earned",
+              prop: "college.earned",
+            },
+          ],
+        },
+        {
+          groupLlb: "GRADUATE",
+          items: [
+            {
+              label: "Name",
+              prop: "graduate.name",
+              width: 250,
+            },
+            {
+              label: "Degree",
+              prop: "graduate.degree",
+              width: 200,
+            },
+            {
+              label: "From",
+              prop: "graduate.from",
+            },
+            {
+              label: "To",
+              prop: "graduate.to",
+            },
+            {
+              label: "Graduated",
+              prop: "graduate.graduated",
+              width: 120,
+            },
+            {
+              label: "Earned",
+              prop: "graduate.earned",
+            },
+          ],
+        },
       ],
     }
   },
@@ -109,9 +262,7 @@ export default {
 </script>
 <template>
   <div class="container">
-    <el-page-header @back="$router.push('/administrator')"> </el-page-header>
-
-    <h1 class="text-primary">Employees</h1>
+    <p class="text-light header">Employees</p>
     <el-divider> </el-divider>
     <div class="action-header">
       <div class="buttons">

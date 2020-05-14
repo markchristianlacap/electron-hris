@@ -77,9 +77,9 @@ export default {
   <el-card class="container">
     <el-row type="flex" justify="space-between">
       <el-col :span="21">
-        <h2>
+        <p class="header">
           {{ data.title }}
-        </h2>
+        </p>
       </el-col>
       <el-col :span="3">
         <el-button plain type="primary" @click="exportToPDS()"
